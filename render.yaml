@@ -1,3 +1,9 @@
+databases:
+  - name: vjobs-db
+    plan: free
+    databaseName: vjobs
+    user: vjobs
+
 services:
   - type: web
     name: job-scout
@@ -10,6 +16,15 @@ services:
         value: 3.11.9
       - key: VJOBS_CACHE_TTL
         value: 900
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vjobs-db
+          property: connectionString
+      - key: VJOBS_APP_BASE_URL
+        value: https://job-scout-726z.onrender.com
+      # Required for magic-link sign-up emails to actually send — set in the Render
+      # dashboard, not here (it's a secret): SENDGRID_API_KEY, SENDGRID_FROM_EMAIL
+      # (must be a single-sender address you've verified in SendGrid).
       # Optional — set these in the Render dashboard, not here, if you want them:
       # - key: ADZUNA_APP_ID
       # - key: ADZUNA_APP_KEY

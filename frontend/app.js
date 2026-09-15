@@ -11,10 +11,13 @@ const els = {
   results: document.getElementById("results"),
   meta: document.getElementById("meta"),
   pagination: document.getElementById("pagination"),
-  subscribeForm: document.getElementById("subscribeForm"),
-  subEmail: document.getElementById("subEmail"),
-  subKeyword: document.getElementById("subKeyword"),
-  subStatus: document.getElementById("subStatus"),
+  signInForm: document.getElementById("signInForm"),
+  signInEmail: document.getElementById("signInEmail"),
+  signedOutView: document.getElementById("signedOutView"),
+  signedInView: document.getElementById("signedInView"),
+  signedInEmail: document.getElementById("signedInEmail"),
+  logoutBtn: document.getElementById("logoutBtn"),
+  authStatus: document.getElementById("authStatus"),
 };
 
 function fmtDate(iso) {
@@ -120,21 +123,69 @@ els.jobType.addEventListener("change", () => search(1));
 els.sortBy.addEventListener("change", () => search(1));
 els.remoteOnly.addEventListener("change", () => search(1));
 
-els.subscribeForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  els.subStatus.textContent = "Saving…";
+function showSignedIn(email) {
+  els.signedInEmail.textContent = email;
+  els.signedInView.hidden = false;
+  els.signedOutView.hidden = true;
+}
+
+function showSignedOut() {
+  els.signedInView.hidden = true;
+  els.signedOutView.hidden = false;
+}
+
+async function refreshAuthState() {
   try {
-    const res = await fetch(`${API_BASE}/api/subscribe`, {
+    const res = await fetch(`${API_BASE}/api/auth/me`);
+    if (res.ok) {
+      const data = await res.json();
+      showSignedIn(data.email);
+      return;
+    }
+  } catch {
+    // network error — leave as signed-out rather than guessing
+  }
+  showSignedOut();
+}
+
+els.signInForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  els.authStatus.textContent = "Sending…";
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/request-link`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: els.subEmail.value, keyword: els.subKeyword.value }),
+      body: JSON.stringify({ email: els.signInEmail.value }),
     });
     if (!res.ok) throw new Error("failed");
-    els.subStatus.textContent = "You're on the list — thanks!";
-    els.subscribeForm.reset();
+    els.authStatus.textContent = "Check your email for a sign-in link.";
+    els.signInForm.reset();
   } catch {
-    els.subStatus.textContent = "Something went wrong, please try again.";
+    els.authStatus.textContent = "Something went wrong, please try again.";
   }
 });
 
+els.logoutBtn.addEventListener("click", async () => {
+  try {
+    await fetch(`${API_BASE}/api/auth/logout`, { method: "POST" });
+  } catch {
+    // best-effort — show signed-out either way
+  }
+  els.authStatus.textContent = "";
+  showSignedOut();
+});
+
+function handleAuthRedirect() {
+  const params = new URLSearchParams(window.location.search);
+  const authResult = params.get("auth");
+  if (!authResult) return;
+  els.authStatus.textContent =
+    authResult === "success" ? "Signed in!" : "That sign-in link is invalid or expired — request a new one.";
+  params.delete("auth");
+  const newUrl = window.location.pathname + (params.toString() ? `?${params}` : "");
+  window.history.replaceState({}, "", newUrl);
+}
+
+handleAuthRedirect();
+refreshAuthState();
 search(1);

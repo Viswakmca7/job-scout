@@ -6,13 +6,17 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Cookie, FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 
+from . import auth
 from .cache import cache
-from .config import AFFILIATE_MAP, SUBSCRIBERS_FILE
+from .config import AFFILIATE_MAP, APP_BASE_URL, SESSION_COOKIE_NAME, SESSION_TTL_DAYS, SUBSCRIBERS_FILE
+from .db import init_db
+from .email_service import send_magic_link_email
 from .filters import filter_jobs, sort_jobs
 from .models import Job
 
@@ -112,11 +116,75 @@ async def subscribe(req: SubscribeRequest):
     return {"status": "subscribed"}
 
 
+class RequestLinkRequest(BaseModel):
+    email: EmailStr
+
+
+def _accounts_unavailable() -> HTTPException:
+    return HTTPException(status_code=503, detail="Accounts aren't configured on this deployment")
+
+
+@app.post("/api/auth/request-link")
+async def request_link(req: RequestLinkRequest):
+    try:
+        token = await auth.create_magic_link(req.email)
+    except RuntimeError:
+        raise _accounts_unavailable()
+
+    link_url = f"{APP_BASE_URL}/api/auth/verify?token={token}"
+    await send_magic_link_email(req.email, link_url)
+    return {"status": "sent"}
+
+
+@app.get("/api/auth/verify")
+async def verify_link(token: str):
+    try:
+        session_token = await auth.verify_magic_link(token)
+    except RuntimeError:
+        raise _accounts_unavailable()
+
+    if session_token is None:
+        return RedirectResponse(url="/?auth=invalid")
+
+    response = RedirectResponse(url="/?auth=success")
+    response.set_cookie(
+        SESSION_COOKIE_NAME,
+        session_token,
+        max_age=SESSION_TTL_DAYS * 86400,
+        httponly=True,
+        samesite="lax",
+        secure=APP_BASE_URL.startswith("https://"),
+    )
+    return response
+
+
+@app.get("/api/auth/me")
+async def me(vjobs_session: str | None = Cookie(default=None)):
+    try:
+        email = await auth.get_user_email_from_session(vjobs_session)
+    except RuntimeError:
+        raise _accounts_unavailable()
+    if not email:
+        raise HTTPException(status_code=401, detail="not signed in")
+    return {"email": email}
+
+
+@app.post("/api/auth/logout")
+async def logout(response: Response, vjobs_session: str | None = Cookie(default=None)):
+    try:
+        await auth.delete_session(vjobs_session)
+    except RuntimeError:
+        pass
+    response.delete_cookie(SESSION_COOKIE_NAME)
+    return {"status": "ok"}
+
+
 @app.on_event("startup")
-async def warm_cache():
+async def on_startup():
     import asyncio
 
-    asyncio.create_task(cache.get_jobs())
+    asyncio.create_task(cache.get_jobs())  # slow (calls external APIs) — don't block startup on it
+    await init_db()  # fast (schema DDL) — must finish before auth endpoints can be trusted
 
 
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"

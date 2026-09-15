@@ -215,10 +215,11 @@ button#searchBtn {
   margin-bottom: 16px;
 }
 
-.alert-card h3 { margin-top: 0; }
-.alert-card p { color: var(--muted); font-size: 0.85rem; }
-#subscribeForm { display: flex; flex-direction: column; gap: 8px; }
-#subscribeForm button {
+.auth-card h3 { margin-top: 0; }
+.auth-card p { color: var(--muted); font-size: 0.85rem; }
+#signInForm { display: flex; flex-direction: column; gap: 8px; }
+#signInForm button,
+#logoutBtn {
   background: var(--accent);
   color: var(--accent-contrast);
   border-color: var(--accent);

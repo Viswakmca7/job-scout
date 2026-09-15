@@ -51,3 +51,16 @@ GREENHOUSE_BOARDS = [
     b.strip() for b in _env("VJOBS_GREENHOUSE_BOARDS", "JOBSCOUT_GREENHOUSE_BOARDS").split(",") if b.strip()
 ]
 LEVER_BOARDS = [b.strip() for b in _env("VJOBS_LEVER_BOARDS", "JOBSCOUT_LEVER_BOARDS").split(",") if b.strip()]
+
+# Accounts (passwordless magic-link sign-in). Auth endpoints no-op with a clear error
+# if DATABASE_URL isn't set — everything else on the site works fine without it.
+DATABASE_URL = os.getenv("DATABASE_URL")
+APP_BASE_URL = os.getenv("VJOBS_APP_BASE_URL", "http://localhost:8000")
+MAGIC_LINK_TTL_MINUTES = int(os.getenv("VJOBS_MAGIC_LINK_TTL_MINUTES", "15"))
+SESSION_TTL_DAYS = int(os.getenv("VJOBS_SESSION_TTL_DAYS", "30"))
+SESSION_COOKIE_NAME = "vjobs_session"
+
+# Required for magic-link emails to actually send. Without these, request-link still
+# creates the token (so the flow is testable) but logs the link instead of emailing it.
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+SENDGRID_FROM_EMAIL = os.getenv("SENDGRID_FROM_EMAIL")

@@ -46,15 +46,21 @@
       </div>
 
       <aside class="sidebar">
-        <div class="card alert-card">
-          <h3>Get instant alerts</h3>
-          <p>Enter your email and a keyword — we'll notify you about new matching jobs when alerts launch.</p>
-          <form id="subscribeForm">
-            <input type="email" id="subEmail" placeholder="you@example.com" required />
-            <input type="text" id="subKeyword" placeholder="keyword (optional)" />
-            <button type="submit">Notify me</button>
-          </form>
-          <p id="subStatus" class="sub-status"></p>
+        <div class="card auth-card">
+          <div id="signedOutView">
+            <h3>Sign in</h3>
+            <p>Get a one-click sign-in link by email — no password to create or remember.</p>
+            <form id="signInForm">
+              <input type="email" id="signInEmail" placeholder="you@example.com" required autocomplete="email" />
+              <button type="submit">Send sign-in link</button>
+            </form>
+          </div>
+          <div id="signedInView" hidden>
+            <h3>Signed in</h3>
+            <p>You're signed in as <strong id="signedInEmail"></strong>.</p>
+            <button id="logoutBtn" type="button">Log out</button>
+          </div>
+          <p id="authStatus" class="sub-status"></p>
         </div>
 
         <div id="ad-slot" class="card ad-slot" aria-label="Sponsored">
