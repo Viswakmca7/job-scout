@@ -7,6 +7,15 @@ import textwrap
 
 import requests
 
+for _stream in (sys.stdout, sys.stderr):
+    # Windows terminals often default to a legacy codepage that can't render
+    # em dashes, umlauts, etc. from job listings — force UTF-8 when possible.
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8")
+        except (ValueError, OSError):
+            pass
+
 DEFAULT_API = os.environ.get("JOBSCOUT_API_URL", "http://localhost:8000")
 
 
