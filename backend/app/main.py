@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import json
 import logging
 import re
@@ -13,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, EmailStr
 
 from . import auth
+from .agent_server import build_mcp_app
 from .cache import cache
 from .config import AFFILIATE_MAP, APP_BASE_URL, SESSION_COOKIE_NAME, SESSION_TTL_DAYS, SUBSCRIBERS_FILE
 from .db import init_db
@@ -22,7 +25,21 @@ from .models import Job
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="Vjobs API", version="1.0.0")
+mcp_app = build_mcp_app()
+
+
+@contextlib.asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with contextlib.AsyncExitStack() as stack:
+        # The mounted MCP app has its own lifespan (starts its session manager) that
+        # FastAPI won't run automatically for a mounted sub-app — enter it explicitly.
+        await stack.enter_async_context(mcp_app.router.lifespan_context(mcp_app))
+        asyncio.create_task(cache.get_jobs())  # slow (calls external APIs) — don't block startup on it
+        await init_db()  # fast (schema DDL) — must finish before auth endpoints can be trusted
+        yield
+
+
+app = FastAPI(title="Vjobs API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,6 +47,8 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
+
+app.mount("/mcp", mcp_app)
 
 
 def _apply_affiliates(jobs: list[Job]) -> list[Job]:
@@ -177,14 +196,6 @@ async def logout(response: Response, vjobs_session: str | None = Cookie(default=
         pass
     response.delete_cookie(SESSION_COOKIE_NAME)
     return {"status": "ok"}
-
-
-@app.on_event("startup")
-async def on_startup():
-    import asyncio
-
-    asyncio.create_task(cache.get_jobs())  # slow (calls external APIs) — don't block startup on it
-    await init_db()  # fast (schema DDL) — must finish before auth endpoints can be trusted
 
 
 frontend_dir = Path(__file__).resolve().parent.parent.parent / "frontend"

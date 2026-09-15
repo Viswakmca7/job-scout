@@ -2,8 +2,8 @@
 
 A job search engine that aggregates listings from multiple **public, no-auth job APIs**,
 lets people filter by keyword, and sort by **latest** or **hiring type** (full-time,
-part-time, contract, internship). Ships as a website (FastAPI + static frontend) and a
-terminal CLI, both hitting the same backend.
+part-time, contract, internship). Ships as a website (FastAPI + static frontend), a
+terminal CLI, and an **MCP server** — all three hit the same backend/data.
 
 **Live:** https://job-scout-726z.onrender.com — the Render service keeps its original
 hostname from before the rename; see [Deploy it (Render)](#deploy-it-render) below for
@@ -124,6 +124,33 @@ vjobs "python remote" --type contract
 No PyPI account, no cloning — installs straight from this (public) GitHub repo, and talks to
 the public hosted instance by default. See [`cli/README.md`](cli/README.md) for details and
 for publishing it to PyPI later so `pip install vjobs-cli` works without the git URL.
+
+## The MCP server — the "agent" other AI assistants can call
+
+Vjobs also runs as a remote [MCP](https://modelcontextprotocol.io) server, mounted on the same
+backend. Any MCP-compatible AI client (Claude, etc.) can add it as a connector and search live
+jobs as part of its own conversation, with no install:
+
+```
+https://job-scout-726z.onrender.com/mcp/
+```
+
+**Note the trailing slash** — Starlette (the ASGI framework underneath) mounts the MCP app at
+that exact path; `/mcp` without the slash returns 405. In Claude: **Settings → Connectors →
+Add custom connector**, paste that URL, done.
+
+Two tools are exposed:
+- `search_jobs(keyword, job_type, remote_only, sort, limit)` — same filtering/sorting as the
+  website and CLI, reusing the exact same cached, freshness-filtered job pool (no separate
+  HTTP round-trip — the MCP tool calls the in-process cache directly).
+- `hiring_type_counts()` — counts of currently cached jobs by hiring type.
+
+Implementation: [`backend/app/agent_server.py`](backend/app/agent_server.py). It runs in
+**stateless HTTP mode** (no session ID needed between requests — simpler for a
+read-only search tool with no per-session state to track) and disables MCP's DNS-rebinding
+protection, which defaults to allowing only `localhost`/`127.0.0.1` — appropriate for guarding
+a local dev server, but it would silently reject every real request once deployed behind a
+public domain like this one.
 
 ## Monetization (what's wired up vs. what's next)
 
