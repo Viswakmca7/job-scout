@@ -16,7 +16,13 @@ for _stream in (sys.stdout, sys.stderr):
         except (ValueError, OSError):
             pass
 
-DEFAULT_API = os.environ.get("VJOBS_API_URL") or os.environ.get("JOBSCOUT_API_URL", "http://localhost:8000")
+# Defaults to the public hosted instance so `pip install` + `vjobs <keyword>` works
+# with zero setup. Override with VJOBS_API_URL to point at a local dev server instead.
+DEFAULT_API = (
+    os.environ.get("VJOBS_API_URL")
+    or os.environ.get("JOBSCOUT_API_URL")
+    or "https://job-scout-726z.onrender.com"
+)
 
 
 def build_parser() -> argparse.ArgumentParser:

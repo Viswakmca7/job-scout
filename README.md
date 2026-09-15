@@ -114,16 +114,16 @@ Railway/Heroku-style platforms: use the included [`Procfile`](Procfile) instead.
 > I can't create hosting or PyPI accounts on your behalf — those steps need your own login,
 > so the deploy and CLI-publish instructions above are written for you to run yourself.
 
-## The CLI
+## The CLI — the "agent" anyone can install
 
 ```bash
-cd vjobs/cli
-pip install -e .
-export VJOBS_API_URL=https://your-app.onrender.com
+pip install "git+https://github.com/Viswakmca7/job-scout.git#subdirectory=cli"
 vjobs "python remote" --type contract
 ```
 
-See [`cli/README.md`](cli/README.md) for publishing it to PyPI so anyone can `pip install vjobs-cli`.
+No PyPI account, no cloning — installs straight from this (public) GitHub repo, and talks to
+the public hosted instance by default. See [`cli/README.md`](cli/README.md) for details and
+for publishing it to PyPI later so `pip install vjobs-cli` works without the git URL.
 
 ## Monetization (what's wired up vs. what's next)
 
