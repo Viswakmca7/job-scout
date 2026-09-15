@@ -18,6 +18,11 @@ USER_AGENT = "VjobsBot/1.0 (+https://github.com/; contact: vjobs aggregator; res
 REQUEST_TIMEOUT = 15.0
 CACHE_TTL_SECONDS = int(_env("VJOBS_CACHE_TTL", "JOBSCOUT_CACHE_TTL", "900"))  # 15 minutes
 
+# Some sources (RemoteOK, Remotive) keep listings open for weeks, which makes results
+# feel out of date. Drop anything older than this many days; jobs with no date at all
+# are always kept since we can't tell their age. Set to 0 to disable.
+MAX_JOB_AGE_DAYS = int(os.getenv("VJOBS_MAX_JOB_AGE_DAYS", "21"))
+
 # Optional source: Adzuna (free tier, requires a free account at https://developer.adzuna.com/)
 ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID")
 ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY")
