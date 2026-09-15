@@ -8,7 +8,7 @@ LinkedIn/Indeed, this is an API they actually publish for third-party use.
 
 Disabled unless JOOBLE_API_KEY is set. Jooble's API is query-based (it has no
 "list everything" endpoint), so we fetch once per cache refresh using a broad seed
-query and then apply Job Scout's normal keyword filter on top of that pool — same
+query and then apply Vjobs's normal keyword filter on top of that pool — same
 pattern the site already uses for every other source.
 """
 

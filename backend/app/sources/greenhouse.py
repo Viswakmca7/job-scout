@@ -7,7 +7,7 @@ pages and third-party aggregators can embed a company's live job list. Fully pub
 and intended for exactly this use — no partnership or key required, just the
 company's board token (the slug in boards.greenhouse.io/<token>).
 
-Configure via JOBSCOUT_GREENHOUSE_BOARDS, a comma-separated list of board tokens,
+Configure via VJOBS_GREENHOUSE_BOARDS, a comma-separated list of board tokens,
 e.g. "stripe,figma,airbnb". Empty by default (no boards tracked).
 """
 

@@ -8,9 +8,11 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
-      - key: JOBSCOUT_CACHE_TTL
+      - key: VJOBS_CACHE_TTL
         value: 900
       # Optional — set these in the Render dashboard, not here, if you want them:
       # - key: ADZUNA_APP_ID
       # - key: ADZUNA_APP_KEY
-      # - key: JOBSCOUT_AFFILIATES
+      # - key: VJOBS_AFFILIATES
+      # - key: VJOBS_GREENHOUSE_BOARDS
+      # - key: VJOBS_LEVER_BOARDS

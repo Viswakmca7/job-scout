@@ -1,9 +1,13 @@
-# Job Scout
+# Vjobs
 
 A job search engine that aggregates listings from multiple **public, no-auth job APIs**,
 lets people filter by keyword, and sort by **latest** or **hiring type** (full-time,
 part-time, contract, internship). Ships as a website (FastAPI + static frontend) and a
 terminal CLI, both hitting the same backend.
+
+**Live:** https://job-scout-726z.onrender.com — the Render service keeps its original
+hostname from before the rename; see [Deploy it (Render)](#deploy-it-render) below for
+how to change the display name if you want.
 
 ## Why APIs instead of scraping LinkedIn/Indeed
 
@@ -50,7 +54,7 @@ embedded elsewhere.
 ## Project layout
 
 ```
-job-scout/
+vjobs/
   backend/         FastAPI app: aggregation, caching, filtering, REST API, serves the frontend
     app/
       sources/     One module per job API, each normalizes to the shared Job model
@@ -59,7 +63,7 @@ job-scout/
       filters.py     Keyword search + sort by latest/hiring type
       main.py        REST endpoints + static file serving
   frontend/        Static HTML/CSS/JS — no build step, no framework
-  cli/             pip-installable `jobscout` terminal command
+  cli/             pip-installable `vjobs` terminal command
   render.yaml       One-click Render deploy blueprint
   Procfile          Alternative for Railway/Heroku-style platforms
 ```
@@ -67,7 +71,7 @@ job-scout/
 ## Run it locally
 
 ```bash
-cd job-scout/backend
+cd vjobs/backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload --app-dir .
 ```
@@ -76,17 +80,17 @@ Open http://localhost:8000 — the FastAPI app serves the frontend directly, no 
 
 ## Run it in VS Code
 
-1. Open the `job-scout/` folder in VS Code (not the whole repo root — that's where `.vscode/` lives).
+1. Open the `vjobs/` folder in VS Code (not the whole repo root — that's where `.vscode/` lives).
 2. Install the recommended extensions when prompted (Python + the `debugpy` debugger).
-3. Run **Terminal → Run Task → "Job Scout: Install backend deps"** once.
-4. Press **F5** (or Run → Start Debugging, config "Job Scout: Run backend") — this starts
+3. Run **Terminal → Run Task → "Vjobs: Install backend deps"** once.
+4. Press **F5** (or Run → Start Debugging, config "Vjobs: Run backend (F5)") — this starts
    uvicorn with `--reload`, breakpoints work in `backend/app/`, and your browser opens to the
    site automatically once the server is ready.
-5. Copy [`.env.example`](.env.example) to `job-scout/.env` to enable optional sources
+5. Copy [`.env.example`](.env.example) to `vjobs/.env` to enable optional sources
    (Adzuna, Jooble, Greenhouse/Lever boards) or change the cache TTL — it's picked up
    automatically on the next run, no need to export env vars by hand.
 
-Prefer no debugger? **Terminal → Run Task → "Job Scout: Run backend"** does the same thing
+Prefer no debugger? **Terminal → Run Task → "Vjobs: Run backend"** does the same thing
 without attaching the debugger.
 
 ## Deploy it (Render)
@@ -94,10 +98,16 @@ without attaching the debugger.
 1. Push this repo to GitHub.
 2. In Render: **New → Blueprint**, point it at your repo. Render reads [`render.yaml`](render.yaml)
    and provisions the web service automatically (free tier works).
-3. Wait for the build/deploy to finish — Render gives you a public URL like
-   `https://job-scout-xxxx.onrender.com`.
+3. Wait for the build/deploy to finish — Render gives you a public URL.
 4. Optional: in the Render dashboard, add environment variables from
-   [`.env.example`](.env.example) (e.g. `ADZUNA_APP_ID`/`ADZUNA_APP_KEY` for local-job coverage).
+   [`.env.example`](.env.example) (e.g. `ADZUNA_APP_ID`/`ADZUNA_APP_KEY` for local-job coverage,
+   `VJOBS_GREENHOUSE_BOARDS` for company-specific tracking).
+
+**Renaming an already-deployed service:** the `name:` field in `render.yaml` is left as
+`job-scout` deliberately — changing it risks Render provisioning a second, separate service
+instead of renaming the existing one on the next Blueprint sync. To rename the live service's
+display name safely (this does **not** change its `.onrender.com` URL), do it manually in the
+Render dashboard under the service's **Settings**.
 
 Railway/Heroku-style platforms: use the included [`Procfile`](Procfile) instead.
 
@@ -107,18 +117,18 @@ Railway/Heroku-style platforms: use the included [`Procfile`](Procfile) instead.
 ## The CLI
 
 ```bash
-cd job-scout/cli
+cd vjobs/cli
 pip install -e .
-export JOBSCOUT_API_URL=https://your-app.onrender.com
-jobscout "python remote" --type contract
+export VJOBS_API_URL=https://your-app.onrender.com
+vjobs "python remote" --type contract
 ```
 
-See [`cli/README.md`](cli/README.md) for publishing it to PyPI so anyone can `pip install jobscout-cli`.
+See [`cli/README.md`](cli/README.md) for publishing it to PyPI so anyone can `pip install vjobs-cli`.
 
 ## Monetization (what's wired up vs. what's next)
 
 **Wired up now (no payment processing, nothing for you to approve):**
-- **Sponsored placements** — set `JOBSCOUT_AFFILIATES` (see `.env.example`) to a JSON map of
+- **Sponsored placements** — set `VJOBS_AFFILIATES` (see `.env.example`) to a JSON map of
   company → your affiliate/apply URL. Matching jobs get a "Sponsored" badge and route through
   your link.
 - **Ad slot** — `frontend/index.html` has a ready `#ad-slot` div. Once you're approved for
@@ -137,4 +147,10 @@ See [`cli/README.md`](cli/README.md) for publishing it to PyPI so anyone can `pi
 
 - Add a new source: create `backend/app/sources/<name>.py` with an async `fetch(client)` that
   returns `list[Job]`, then add it to `ALL_SOURCES` in `backend/app/sources/__init__.py`.
-- Change cache freshness: `JOBSCOUT_CACHE_TTL` env var (seconds).
+- Change cache freshness: `VJOBS_CACHE_TTL` env var (seconds).
+
+## Note on the rename
+
+This project was originally called "Job Scout." Env vars still accept both the old
+`JOBSCOUT_*` names and the new `VJOBS_*` names (new name takes priority if both are set),
+so an existing deployment configured with the old names keeps working without any changes.

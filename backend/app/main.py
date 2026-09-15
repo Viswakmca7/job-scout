@@ -18,7 +18,7 @@ from .models import Job
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="Job Scout API", version="1.0.0")
+app = FastAPI(title="Vjobs API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

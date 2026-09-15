@@ -6,7 +6,7 @@ Like Greenhouse, Lever publishes a public no-auth JSON API per company so career
 pages and aggregators can embed live postings. No key required — just the
 company's Lever site token (the slug in jobs.lever.co/<token>).
 
-Configure via JOBSCOUT_LEVER_BOARDS, a comma-separated list of company tokens,
+Configure via VJOBS_LEVER_BOARDS, a comma-separated list of company tokens,
 e.g. "netflix,palantir". Empty by default (no boards tracked).
 """
 

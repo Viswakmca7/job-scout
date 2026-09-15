@@ -8,7 +8,7 @@ import httpx
 from .models import Job
 from .sources import ALL_SOURCES
 
-logger = logging.getLogger("jobscout.aggregator")
+logger = logging.getLogger("vjobs.aggregator")
 
 
 async def fetch_all_jobs() -> list[Job]:
