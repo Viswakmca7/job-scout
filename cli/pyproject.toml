@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jobscout-cli"
+version = "1.0.0"
+description = "Search Job Scout job listings from the terminal."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = ["requests>=2.31"]
+
+[project.scripts]
+jobscout = "jobscout.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["jobscout*"]

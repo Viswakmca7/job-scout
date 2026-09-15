@@ -1,0 +1,37 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Job Scout: Install backend deps",
+      "type": "shell",
+      "command": "python -m pip install -r requirements.txt",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Job Scout: Run backend",
+      "type": "shell",
+      "command": "python -m uvicorn app.main:app --reload --port 8123",
+      "options": { "cwd": "${workspaceFolder}/backend" },
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Started server process",
+          "endsPattern": "Application startup complete"
+        }
+      },
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Job Scout: Install CLI (editable)",
+      "type": "shell",
+      "command": "python -m pip install -e .",
+      "options": { "cwd": "${workspaceFolder}/cli" },
+      "problemMatcher": []
+    }
+  ]
+}

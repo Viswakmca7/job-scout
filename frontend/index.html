@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Scout — find jobs by keyword</title>
+  <meta name="description" content="Search live job postings aggregated from multiple job boards, filtered by keyword, sorted by latest or hiring type." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">🔎 Job Scout</div>
+      <p class="tagline">Multi-source job search — filter by keyword, sort by latest or hiring type.</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="search-panel" aria-label="Search filters">
+      <input id="keyword" type="search" placeholder="Keyword e.g. python, react, data analyst" autocomplete="off" />
+      <select id="jobType" aria-label="Hiring type">
+        <option value="all">Any hiring type</option>
+        <option value="full-time">Full-time</option>
+        <option value="part-time">Part-time</option>
+        <option value="contract">Contract</option>
+        <option value="internship">Internship</option>
+        <option value="unknown">Unspecified</option>
+      </select>
+      <select id="sortBy" aria-label="Sort by">
+        <option value="latest">Sort: Latest first</option>
+        <option value="type">Sort: Hiring type</option>
+      </select>
+      <label class="checkbox">
+        <input type="checkbox" id="remoteOnly" />
+        Remote only
+      </label>
+      <button id="searchBtn">Search</button>
+    </section>
+
+    <div id="meta" class="meta" role="status"></div>
+
+    <div class="layout">
+      <div>
+        <div id="results" class="results" aria-live="polite"></div>
+        <div id="pagination" class="pagination"></div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="card alert-card">
+          <h3>Get instant alerts</h3>
+          <p>Enter your email and a keyword — we'll notify you about new matching jobs when alerts launch.</p>
+          <form id="subscribeForm">
+            <input type="email" id="subEmail" placeholder="you@example.com" required />
+            <input type="text" id="subKeyword" placeholder="keyword (optional)" />
+            <button type="submit">Notify me</button>
+          </form>
+          <p id="subStatus" class="sub-status"></p>
+        </div>
+
+        <div id="ad-slot" class="card ad-slot" aria-label="Sponsored">
+          <span class="ad-label">Sponsored</span>
+          <!-- Ad network slot: replace with your EthicalAds / Carbon Ads / AdSense snippet once approved. -->
+          <div class="ad-placeholder">Your ad here</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="wrap footer">
+    <p>Sources: RemoteOK, Arbeitnow, Remotive, Jobicy (+ Adzuna when configured). Not affiliated with any listed employer or board.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
